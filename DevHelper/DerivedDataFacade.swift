@@ -10,16 +10,19 @@ import Foundation
 
 protocol DerivedData {
     func fileSize() -> String
+    func getStringPathToDerivedData() -> String
+    func getURLPathToDerivedData() -> URL
 }
 
 class DerivedDataFacade: DerivedData {
     
     private let fileManager = FileManager.default
-    let derivedPath = "/Users/pavel.grechikhin/Library/Developer/Xcode/DerivedData"
+    let derivedPath = "Library/Developer/Xcode/DerivedData"
     
     func fileSize() -> String {
         do {
-            let size = try fileManager.allocatedSizeOfDirectory(at: URL(string: derivedPath)!)
+            let path = getURLPathToDerivedData()
+            let size = try fileManager.allocatedSizeOfDirectory(at: path)
             let byteFormater = ByteCountFormatter()
             byteFormater.allowedUnits = .useMB
             byteFormater.countStyle = .file
@@ -28,5 +31,13 @@ class DerivedDataFacade: DerivedData {
         } catch {
             return "unknown"
         }
+    }
+    
+    func getStringPathToDerivedData() -> String {
+        return fileManager.homeDirectoryForCurrentUser.appendingPathComponent(derivedPath).absoluteString
+    }
+    
+    func getURLPathToDerivedData() -> URL {
+        return fileManager.homeDirectoryForCurrentUser.appendingPathComponent(derivedPath)
     }
 }

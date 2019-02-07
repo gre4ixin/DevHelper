@@ -11,7 +11,6 @@ import Cocoa
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {
     
-    let derivedPath = "/Users/pavel.grechikhin/Library/Developer/Xcode/DerivedData"
     let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
     let menu = NSMenu()
     var dataStorage: DataStorageProxy!
@@ -25,35 +24,28 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         let lastClearDate = dataStorage.lastClear()
         menu.addItem(withTitle: "Last clear: \(lastClearDate)", action: nil, keyEquivalent: "")
-        menu.addItem(NSMenuItem.separator())
-        menu.addItem(withTitle: "Remove derived data", action: #selector(clearData(sender:)), keyEquivalent: "d")
         let size = self.facade.fileSize()
-        menu.addItem(withTitle: "Derived size: \(size)", action: #selector(derivedDataSize(sender:)), keyEquivalent: "")
+        menu.addItem(withTitle: "Derived size: \(size)", action: nil, keyEquivalent: "")
+        menu.addItem(NSMenuItem.separator())
+        menu.addItem(withTitle: "Remove derived data", action: #selector(clearData(sender:)), keyEquivalent: "")
         menu.addItem(NSMenuItem.separator())
         menu.addItem(withTitle: "Quit", action: #selector(quit(sender:)), keyEquivalent: "q")
+        menu.delegate = self
         statusItem.menu = menu
     }
-
-    
-    func getLastDate() -> String {
-        
-        return ""
-    }
-    
 }
 
 extension AppDelegate {
     
     @objc func derivedDataSize(sender: NSMenuItem) {
-        let size = facade.fileSize()
-        let item = menu.item(at: 3)
-        item?.title = "Derived size: \(size)"
+        updateMenu()
     }
     
     @objc func clearData(sender: NSMenuItem) {
-        
         do {
-            try fileManager.removeItem(atPath: derivedPath)
+            var path = facade.getStringPathToDerivedData()
+            path.removeLast()
+            try fileManager.removeItem(atPath: path)
             dataStorage.updateLastDate { (prettyData) in
                 let item = menu.item(at: 0)
                 item?.title = "Last clear: \(prettyData)"
@@ -67,5 +59,23 @@ extension AppDelegate {
         NSApplication.shared.terminate(self)
     }
     
+    func updateMenu() {
+        DispatchQueue.global(qos: .background).async { [weak self] in
+            print("start update")
+            guard let strongSelf = self else { return }
+            let size = strongSelf.facade.fileSize()
+            let item = strongSelf.menu.item(at: 1)
+            DispatchQueue.main.async {
+                item?.title = "Derived size: \(size)"
+                print("finish update")
+            }
+        }
+    }
+    
 }
 
+extension AppDelegate: NSMenuDelegate {
+    func menuWillOpen(_ menu: NSMenu) {
+        updateMenu()
+    }
+}
