@@ -8,7 +8,6 @@
 
 import Foundation
 
-
 public extension FileManager {
     
     public func allocatedSizeOfDirectory(at directoryURL: URL) throws -> UInt64 {
@@ -19,27 +18,21 @@ public extension FileManager {
             return false
         }
         
-        // We have to enumerate all directory contents, including subdirectories.
         let enumerator = self.enumerator(at: directoryURL,
                                          includingPropertiesForKeys: Array(allocatedSizeResourceKeys),
                                          options: [],
                                          errorHandler: errorHandler)!
         
-        // We'll sum up content size here:
         var accumulatedSize: UInt64 = 0
         
-        // Perform the traversal.
         for item in enumerator {
             
-            // Bail out on errors from the errorHandler.
             if enumeratorError != nil { break }
             
-            // Add up individual file sizes.
             let contentItemURL = item as! URL
             accumulatedSize += try contentItemURL.regularFileAllocatedSize()
         }
         
-        // Rethrow errors from errorHandler.
         if let error = enumeratorError { throw error }
         
         return accumulatedSize
