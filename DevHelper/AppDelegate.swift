@@ -61,13 +61,11 @@ extension AppDelegate {
     
     func updateMenu() {
         DispatchQueue.global(qos: .background).async { [weak self] in
-            print("start update")
             guard let strongSelf = self else { return }
             let size = strongSelf.facade.fileSize()
             let item = strongSelf.menu.item(at: 1)
             DispatchQueue.main.async {
                 item?.title = "Derived size: \(size)"
-                print("finish update")
             }
         }
     }
