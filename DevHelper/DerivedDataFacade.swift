@@ -37,11 +37,9 @@ class DerivedDataFacade: DerivedData {
         var path = fileManager.homeDirectoryForCurrentUser.appendingPathComponent(derivedPath, isDirectory: true).absoluteString
         path.removeSubrange(path.range(of: "file://")!)
         return path
-//        return fileManager.homeDirectoryForCurrentUser.appendingPathComponent(derivedPath).absoluteString
     }
     
     func getURLPathToDerivedData() -> URL {
-//        return fileManager.homeDirectoryForCurrentUser.appendPathComponent(derivedPath, isDirectory: true)
          return fileManager.homeDirectoryForCurrentUser.appendingPathComponent(derivedPath)
     }
 }
